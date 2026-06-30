@@ -24,7 +24,6 @@ Provenance Guard utilizes a multi-signal detection pipeline consisting of two in
 The two independent outputs are combined into a single unified `confidence_score` using a simple arithmetic mean:
 
 $$\text{confidence\_score} = \frac{\text{llm\_score} + \text{heuristic\_score}}{2}$$
-
 ---
 
 ## 2. Uncertainty Representation
@@ -128,3 +127,21 @@ When a client submits text via `POST /submit`, the application checks the reques
        ^                                            |                |   logs reasoning)     |
        |       {"status": "appeal_received"}        |                +-----------------------+
        +--------------------------------------------+
+
+## 7. AI Tool Plan
+
+### Milestone 3: Submission Endpoint & Groq Signal
+*   **Context Provided:** Section 1 (Signal 1 properties), Section 6 (Architecture Narrative and Diagram).
+*   **AI Generation Prompt:** Generate a complete boilerplate Flask application including a structured `POST /submit` route receiving `text` and `creator_id`. Implement a standalone Python function utilizing the `groq` SDK to prompt `llama-3.3-70b-versatile` to evaluate the text and return a confidence score between 0.0 and 1.0. Include a basic helper using Python's built-in `sqlite3` module to initialize a database table and log the entry with a unique UUID string (`content_id`).
+*   **Verification Process:** Run the application locally and use a `curl` script to verify that a text submission returns a valid JSON response containing a unique `content_id` and that the row successfully populates the SQLite database.
+
+### Milestone 4: Stylometric Heuristics & Unified Scoring
+*   **Context Provided:** Section 1 (Signal 2 calculations and formula), Section 2 (Calibration ranges), Section 6 (Diagram).
+*   **AI Generation Prompt:** Create a pure Python module that evaluates a text block and returns a normalized score between 0.0 and 1.0 based on sentence length variance and token distribution ratios. Write the unified scoring function that averages this heuristic score with the Groq score, and integrate it into the existing `POST /submit` code so that both metrics populate the SQLite database schema.
+*   **Verification Process:** Pass 4 hardcoded string payloads into the pipeline (1 clear AI sample, 1 informal human text, 1 formal academic essay, 1 repetitive instructional block) to confirm that the combined scores shift predictably across the ranges.
+
+### Milestone 5: Production Layer Completion
+*   **Context Provided:** Section 3 (Transparency Label strings), Section 4 (Appeals parameters), Section 6 (Diagram).
+*   **AI Generation Prompt:** Implement a function that processes the final score into the exact string labels specified in the design table. Add a `POST /appeal` endpoint that takes a `content_id` and `creator_reasoning`, updates the matching database row's status column to `"under_review"`, and records the reasoning. Configure `Flask-Limiter` with an in-memory storage URI to protect `/submit` from rapid floods. Add a simple `GET /log` endpoint that lists the database contents for audit inspection.
+*   **Verification Process:** Verify label rendering by confirming all three string outputs change dynamically based on input properties. Run a localized bash loop firing 12 requests in under a second to confirm that the API successfully returns a `429 Too Many Requests` status block after the 10th request.
+
