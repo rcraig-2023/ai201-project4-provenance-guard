@@ -23,7 +23,7 @@ Provenance Guard utilizes a multi-signal detection pipeline consisting of two in
 ### Combining Signals
 The two independent outputs are combined into a single unified `confidence_score` using a simple arithmetic mean:
 
-$$\text{confidence\_score} = \frac{\text{llm\_score} + \text{heuristic\_score}}{2}$$
+$$\text{confidence\\_score} = \frac{\text{llm\\_score} + \text{heuristic\\_score}}{2}$$
 
 ---
 
