@@ -29,6 +29,8 @@ The confidence score represents genuine uncertainty rather than a binary output.
 The `/submit` endpoint is protected by `Flask-Limiter` with limits set to `10 per minute; 100 per day`. 
 * **Reasoning:** On a creative writing platform, a single creator realistically submits a few pieces a day. 10 requests per minute allows for reasonable rapid edits or retries, while 100 per day strictly prevents adversaries from using automated scripts to flood the system or reverse-engineer the detection heuristics. 
 
+**Rate Limit Evidence:**
+```bash
 ricacraig@ricas-mbp ai201-project4-provenance-guard % for i in {1..12}; do curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:5002/submit -H "Content-Type: application/json" -d '{"text": "Rate limit test.", "creator_id": "ratelimit-test"}'; done
 200
 200
@@ -42,9 +44,10 @@ ricacraig@ricas-mbp ai201-project4-provenance-guard % for i in {1..12}; do curl 
 200
 429
 429
+```
 
 ## Audit Log Evidence
-
+```json
 ricacraig@ricas-mbp ai201-project4-provenance-guard % curl -s http://localhost:5002/log
 {
   "audit_log": [
@@ -290,6 +293,7 @@ ricacraig@ricas-mbp ai201-project4-provenance-guard % curl -s http://localhost:5
     }
   ]
 }
+```
 
 ## Known Limitations
 * **Stylometric Heuristics Blind Spot:** The system is prone to false positives when processing **instructional recipe books**. These texts follow rigid, repetitive grammatical patterns ("Add 1 cup of X. Stir for 2 minutes.") which causes the stylometric heuristic signal to drop sentence length variance to near zero. Consequently, the system will likely misclassify these human-written instructions as AI-generated due to their lack of structural "burstiness".
